@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { KnowledgeBase, GameMessage, CombatEndPayload } from '../types';
 import { INITIAL_KNOWLEDGE_BASE } from '../constants';
@@ -10,6 +9,7 @@ export const useGameData = () => {
     JSON.parse(JSON.stringify(INITIAL_KNOWLEDGE_BASE))
   );
   const [gameMessages, setGameMessages] = useState<GameMessage[]>([]);
+  const [aiCopilotMessages, setAiCopilotMessages] = useState<GameMessage[]>([]); // NEW
   const [rawAiResponsesLog, setRawAiResponsesLog] = useState<string[]>([]);
   const [sentPromptsLog, setSentPromptsLog] = useState<string[]>([]);
   const [sentEconomyPromptsLog, setSentEconomyPromptsLog] = useState<string[]>([]);
@@ -58,6 +58,7 @@ export const useGameData = () => {
   const resetGameData = useCallback(() => {
     setKnowledgeBase(JSON.parse(JSON.stringify(INITIAL_KNOWLEDGE_BASE)));
     setGameMessages([]);
+    setAiCopilotMessages([]); // NEW
     setRawAiResponsesLog([]);
     setSentPromptsLog([]);
     setSentEconomyPromptsLog([]);
@@ -84,7 +85,7 @@ export const useGameData = () => {
     setReceivedVictoryConsequenceResponsesLog([]);
     setCurrentPageDisplay(1);
     setMessageIdBeingEdited(null);
-  }, [setKnowledgeBase, setGameMessages, setRawAiResponsesLog, setSentPromptsLog, setSentEconomyPromptsLog, setReceivedEconomyResponsesLog, setSentGeneralSubLocationPromptsLog, setReceivedGeneralSubLocationResponsesLog, setLatestPromptTokenCount, setSummarizationResponsesLog, setSentCraftingPromptsLog, setReceivedCraftingResponsesLog, setCurrentPageDisplay, setMessageIdBeingEdited, setRetrievedRagContextLog]);
+  }, [setKnowledgeBase, setGameMessages, setRawAiResponsesLog, setSentPromptsLog, setSentEconomyPromptsLog, setReceivedEconomyResponsesLog, setSentGeneralSubLocationPromptsLog, setReceivedGeneralSubLocationResponsesLog, setLatestPromptTokenCount, setSummarizationResponsesLog, setSentCraftingPromptsLog, setReceivedCraftingResponsesLog, setCurrentPageDisplay, setMessageIdBeingEdited, setRetrievedRagContextLog, setAiCopilotMessages]);
 
 
   return {
@@ -92,6 +93,8 @@ export const useGameData = () => {
     setKnowledgeBase,
     gameMessages,
     setGameMessages,
+    aiCopilotMessages, // NEW
+    setAiCopilotMessages, // NEW
     rawAiResponsesLog,
     setRawAiResponsesLog,
     sentPromptsLog,

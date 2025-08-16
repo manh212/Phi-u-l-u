@@ -54,4 +54,6 @@ export const INITIAL_KNOWLEDGE_BASE: KnowledgeBase = {
   gameEvents: [], // NEW: For event system
   ragVectorStore: { vectors: [], metadata: [] }, // UPDATED: Use metadata instead of texts
   aiContextConfig: {} as AIContextConfig, // NEW: Initialize to satisfy type, will be populated on new/load game.
+  aiCopilotConfigs: [], // NEW
+  activeAICopilotConfigId: null, // NEW
 };

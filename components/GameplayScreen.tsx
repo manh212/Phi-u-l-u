@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
 import { GameScreen, GameMessage, StyleSettings, StyleSettingProperty } from './../types';
 import { VIETNAMESE } from './../constants';
@@ -16,6 +17,7 @@ import WorldSidePanel from './gameplay/WorldSidePanel';
 import DebugPanelDisplay from './gameplay/DebugPanelDisplay';
 import MiniInfoPopover from './ui/MiniInfoPopover';
 import { MainMenuPanel } from './gameplay/layout/MainMenuPanel';
+import AICopilotPanel from './gameplay/AICopilotPanel';
 
 // Import Custom Hooks
 import { useGameplayPanels } from '../hooks/useGameplayPanels';
@@ -32,7 +34,7 @@ const GameplayScreen: React.FC = () => {
     const storyLogRef = useRef<HTMLDivElement>(null);
 
     // Use custom hooks for UI state not needed globally
-    const { isReaderMode, setIsReaderMode, isCharPanelOpen, setIsCharPanelOpen, isQuestsPanelOpen, setIsQuestsPanelOpen, isWorldPanelOpen, setIsWorldPanelOpen, showDebugPanel, setShowDebugPanel, isMainMenuOpen, setIsMainMenuOpen } = useGameplayPanels();
+    const { isReaderMode, setIsReaderMode, isCharPanelOpen, setIsCharPanelOpen, isQuestsPanelOpen, setIsQuestsPanelOpen, isWorldPanelOpen, setIsWorldPanelOpen, showDebugPanel, setShowDebugPanel, isMainMenuOpen, setIsMainMenuOpen, isCopilotOpen, setIsCopilotOpen } = useGameplayPanels();
     const { popover, handleKeywordClick, closePopover } = usePopover();
     
     const {
@@ -82,12 +84,13 @@ const GameplayScreen: React.FC = () => {
                 game.closeModal();
                 game.closeEconomyModal();
                 game.closeSlaveMarketModal();
+                setIsCopilotOpen(false); // NEW
                 if (game.messageIdBeingEdited) game.onCancelEditMessage();
             }
         };
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
-    }, [closePopover, game]);
+    }, [closePopover, game, setIsCopilotOpen]);
     
     // Correctly implemented style function for story messages
     const getDynamicMessageStyles = useCallback((msgType: GameMessage['type']): React.CSSProperties => {
@@ -179,6 +182,7 @@ const GameplayScreen: React.FC = () => {
                     isSavingGame={game.isSavingGame}
                     onQuit={game.onQuit}
                     isSummarizing={isSummarizingUi}
+                    onToggleCopilot={() => setIsCopilotOpen(true)}
                 />
             )}
             
@@ -200,6 +204,10 @@ const GameplayScreen: React.FC = () => {
                     parseAndHighlightText={parseAndHighlightText}
                     getDynamicMessageStyles={getDynamicMessageStyles}
                     onClick={() => setIsReaderMode(prev => !prev)}
+                    onAskCopilotAboutError={(errorMsg) => {
+                        game.handleCopilotQuery("Giải thích lỗi này giúp tôi.", errorMsg);
+                        setIsCopilotOpen(true);
+                    }}
                 />
                  {!isReaderMode && (
                     <div className="flex-shrink-0">
@@ -312,6 +320,9 @@ const GameplayScreen: React.FC = () => {
                 />
             </OffCanvasPanel>
             
+            {/* AI Copilot Panel - NEW */}
+            <AICopilotPanel isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
+
             {/* Popover & Debug */}
             <MiniInfoPopover isOpen={popover.isOpen} targetRect={popover.targetRect} entity={popover.entity} entityType={popover.entityType} onClose={closePopover} knowledgeBase={game.knowledgeBase} />
             {!isReaderMode && showDebugPanel && <DebugPanelDisplay 

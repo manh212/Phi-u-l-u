@@ -48,20 +48,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom/": "https://esm.sh/react-dom@19.0.0/",
-    "react/": "https://esm.sh/react@19.0.0/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.5.1",
-    "@cloudinary/url-gen": "https://esm.sh/@cloudinary/url-gen@^1.19.0",
-    "@cloudinary/react": "https://esm.sh/@cloudinary/react@^1.13.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.14.0",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "react": "https://esm.sh/react@^19.1.1",
     "crypto": "https://esm.sh/crypto@^1.0.1",
-    "fast-json-patch": "https://esm.sh/fast-json-patch@3.1.1",
-    "pako": "https://esm.sh/pako@2.1.0",
-    "@netlify/functions": "https://esm.sh/@netlify/functions@^4.1.7"
+    "pako": "https://esm.sh/pako@^2.1.0",
+    "fast-json-patch": "https://esm.sh/fast-json-patch@^3.1.1",
+    "@netlify/functions": "https://esm.sh/@netlify/functions@^4.2.1"
   }
 }
 </script>
@@ -69,6 +66,6 @@
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script src="/dist/bundle.js" defer></script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 export const useGameplayPanels = () => {
@@ -8,6 +7,7 @@ export const useGameplayPanels = () => {
   const [isWorldPanelOpen, setIsWorldPanelOpen] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [isMainMenuOpen, setIsMainMenuOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false); // NEW
 
   return {
     isReaderMode,
@@ -22,5 +22,7 @@ export const useGameplayPanels = () => {
     setShowDebugPanel,
     isMainMenuOpen,
     setIsMainMenuOpen,
+    isCopilotOpen, // NEW
+    setIsCopilotOpen, // NEW
   };
 };

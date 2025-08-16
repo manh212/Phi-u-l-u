@@ -1,38 +1,39 @@
 import React, { useRef, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
-import { GameScreen, GameMessage, StyleSettings, StyleSettingProperty } from './../types';
-import { VIETNAMESE } from './../constants';
-import * as GameTemplates from '../templates'; // Import GameTemplates
+import { GameScreen, GameMessage, StyleSettings, StyleSettingProperty } from './types';
+import { VIETNAMESE } from './constants';
+import * as GameTemplates from './templates'; // Import GameTemplates
 
 // Import Layout Components
-import GameHeader from './gameplay/layout/GameHeader';
-import StoryLog from './gameplay/layout/StoryLog';
-import PlayerInputArea from './gameplay/layout/PlayerInputArea';
+import GameHeader from './components/gameplay/layout/GameHeader';
+import StoryLog from './components/gameplay/layout/StoryLog';
+import PlayerInputArea from './components/gameplay/layout/PlayerInputArea';
 
 // Import Panels & Modals
-import OffCanvasPanel from './ui/OffCanvasPanel';
-import CharacterSidePanel from './gameplay/CharacterSidePanel';
-import QuestsSidePanel from './gameplay/QuestsSidePanel';
-import WorldSidePanel from './gameplay/WorldSidePanel';
-import DebugPanelDisplay from './gameplay/DebugPanelDisplay';
-import MiniInfoPopover from './ui/MiniInfoPopover';
-import { MainMenuPanel } from './gameplay/layout/MainMenuPanel';
+import OffCanvasPanel from './components/ui/OffCanvasPanel';
+import CharacterSidePanel from './components/gameplay/CharacterSidePanel';
+import QuestsSidePanel from './components/gameplay/QuestsSidePanel';
+import WorldSidePanel from './components/gameplay/WorldSidePanel';
+import DebugPanelDisplay from './components/gameplay/DebugPanelDisplay';
+import MiniInfoPopover from './components/ui/MiniInfoPopover';
+import { MainMenuPanel } from './components/gameplay/layout/MainMenuPanel';
+import AICopilotPanel from './components/gameplay/AICopilotPanel'; // NEW
 
 // Import Custom Hooks
-import { useGameplayPanels } from '../hooks/useGameplayPanels';
-import { usePlayerInput } from '../hooks/usePlayerInput';
-import { usePopover } from '../hooks/usePopover';
+import { useGameplayPanels } from './hooks/useGameplayPanels';
+import { usePlayerInput } from './hooks/usePlayerInput';
+import { usePopover } from './hooks/usePopover';
 
 // Import Utilities
-import { parseAndHighlightText as parseAndHighlightTextUtil } from '../utils/textHighlighting';
-import { useGame } from '../hooks/useGame'; // Using useGame to get context
-import Button from './ui/Button'; // Import Button
+import { parseAndHighlightText as parseAndHighlightTextUtil } from './utils/textHighlighting';
+import { useGame } from './hooks/useGame'; // Using useGame to get context
+import Button from './components/ui/Button'; // Import Button
 
 const GameplayScreen: React.FC = () => {
     const game = useGame(); // Get all props from context
     const storyLogRef = useRef<HTMLDivElement>(null);
 
     // Use custom hooks for UI state not needed globally
-    const { isReaderMode, setIsReaderMode, isCharPanelOpen, setIsCharPanelOpen, isQuestsPanelOpen, setIsQuestsPanelOpen, isWorldPanelOpen, setIsWorldPanelOpen, showDebugPanel, setShowDebugPanel, isMainMenuOpen, setIsMainMenuOpen } = useGameplayPanels();
+    const { isReaderMode, setIsReaderMode, isCharPanelOpen, setIsCharPanelOpen, isQuestsPanelOpen, setIsQuestsPanelOpen, isWorldPanelOpen, setIsWorldPanelOpen, showDebugPanel, setShowDebugPanel, isMainMenuOpen, setIsMainMenuOpen, isCopilotOpen, setIsCopilotOpen } = useGameplayPanels();
     const { popover, handleKeywordClick, closePopover } = usePopover();
     
     const {
@@ -82,12 +83,13 @@ const GameplayScreen: React.FC = () => {
                 game.closeModal();
                 game.closeEconomyModal();
                 game.closeSlaveMarketModal();
+                setIsCopilotOpen(false); // NEW
                 if (game.messageIdBeingEdited) game.onCancelEditMessage();
             }
         };
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
-    }, [closePopover, game]);
+    }, [closePopover, game, setIsCopilotOpen]);
     
     // Correctly implemented style function for story messages
     const getDynamicMessageStyles = useCallback((msgType: GameMessage['type']): React.CSSProperties => {
@@ -179,6 +181,7 @@ const GameplayScreen: React.FC = () => {
                     isSavingGame={game.isSavingGame}
                     onQuit={game.onQuit}
                     isSummarizing={isSummarizingUi}
+                    onToggleCopilot={() => setIsCopilotOpen(true)}
                 />
             )}
             
@@ -200,6 +203,10 @@ const GameplayScreen: React.FC = () => {
                     parseAndHighlightText={parseAndHighlightText}
                     getDynamicMessageStyles={getDynamicMessageStyles}
                     onClick={() => setIsReaderMode(prev => !prev)}
+                    onAskCopilotAboutError={(errorMsg) => {
+                        game.handleCopilotQuery("Giải thích lỗi này giúp tôi.", errorMsg);
+                        setIsCopilotOpen(true);
+                    }}
                 />
                  {!isReaderMode && (
                     <div className="flex-shrink-0">
@@ -312,6 +319,9 @@ const GameplayScreen: React.FC = () => {
                 />
             </OffCanvasPanel>
             
+            {/* AI Copilot Panel - NEW */}
+            <AICopilotPanel isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
+
             {/* Popover & Debug */}
             <MiniInfoPopover isOpen={popover.isOpen} targetRect={popover.targetRect} entity={popover.entity} entityType={popover.entityType} onClose={closePopover} knowledgeBase={game.knowledgeBase} />
             {!isReaderMode && showDebugPanel && <DebugPanelDisplay 

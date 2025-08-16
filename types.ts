@@ -41,6 +41,7 @@ export enum GameScreen {
   SlaveAuction = 'SlaveAuction',
   Prompts = 'Prompts', // NEW
   Events = 'Events', // NEW: Event Screen
+  AICopilotPanel = 'AICopilotPanel', // NEW
 }
 
 // NEW: For AI Context Settings screen
@@ -78,6 +79,14 @@ export interface AIContextConfig {
     sendCombatStartRules: boolean;
     sendSpecialEventRules: boolean;
     sendSimpleCompanionRules: boolean;
+}
+
+// NEW: Interface for AI Copilot configurations
+export interface AICopilotConfig {
+  id: string;
+  name: string;
+  model: string;
+  systemInstruction: string;
 }
 
 export type StorageType = 'local';
@@ -442,6 +451,9 @@ export interface KnowledgeBase {
   gameEvents: GameEvent[]; // NEW: For event system
   ragVectorStore?: VectorStore; // NEW: For RAG
   aiContextConfig: AIContextConfig; // NEW
+  aiCopilotMessages?: GameMessage[]; // NEW for AI Copilot
+  aiCopilotConfigs: AICopilotConfig[]; // NEW
+  activeAICopilotConfigId: string | null; // NEW
 }
 
 export interface AiChoice { text: string; actionTag?: string; }

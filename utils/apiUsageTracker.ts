@@ -16,6 +16,7 @@ export const API_CALL_CATEGORIES = {
   IMAGE_GENERATION: 'Tạo Ảnh Đại Diện',
   TOKEN_COUNT: 'Tính Toán Token',
   EMBEDDING_GENERATION: 'Tạo Vector Ngữ Cảnh (RAG)',
+  AI_COPILOT: 'Siêu Trợ Lý AI', // NEW
 } as const;
 
 export type ApiCallCategory = keyof typeof API_CALL_CATEGORIES;

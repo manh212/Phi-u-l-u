@@ -16,6 +16,7 @@ interface GameHeaderProps {
   isSavingGame: boolean;
   onQuit: () => void;
   isSummarizing: boolean;
+  onToggleCopilot: () => void; // NEW
 }
 
 const GameHeader: React.FC<GameHeaderProps> = ({
@@ -30,6 +31,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   isSavingGame,
   onQuit,
   isSummarizing,
+  onToggleCopilot, // NEW
 }) => {
   const { worldDate, playerStats } = knowledgeBase;
   const turn = playerStats.turn;
@@ -68,6 +70,21 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
             <span className="hidden sm:inline ml-2">Menu</span>
+          </Button>
+
+          <Button
+            onClick={onToggleCopilot}
+            variant="secondary"
+            size="sm"
+            title="Mở Siêu Trợ Lý AI"
+            aria-label="Mở Siêu Trợ Lý AI"
+            className="border-sky-500 text-sky-300 hover:bg-sky-700 hover:text-white px-2 sm:px-3"
+          >
+            <span role="img" aria-label="brain" className="sm:hidden">🧠</span>
+            <span className="hidden sm:inline flex items-center gap-1">
+                <span role="img" aria-label="brain">🧠</span>
+                Trợ Lý
+            </span>
           </Button>
           
           <Button

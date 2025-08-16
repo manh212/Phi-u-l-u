@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { KnowledgeBase, GameMessage, WorldSettings, PlayerActionInputType, ResponseLength, GameScreen, RealmBaseStatDefinition, TurnHistoryEntry, AuctionState, Item, AuctionCommentaryEntry, FindLocationParams, Prisoner, Wife, Slave, CombatEndPayload, AuctionSlave, NPC, CombatDispositionMap, AiChoice } from './../types';
-import { countTokens, getApiSettings as getGeminiApiSettings, handleCompanionInteraction, handlePrisonerInteraction, summarizeCompanionInteraction, summarizePrisonerInteraction, generateNonCombatDefeatConsequence, generateSlaveAuctionData, runSlaveAuctionTurn, runSlaveAuctioneerCall, generateVictoryConsequence, summarizeCombat, generateDefeatConsequence, generateCraftedItemViaAI, findLocationWithAI, generateNextTurn, generateRefreshedChoices } from './../services/geminiService';
+import { countTokens, getApiSettings as getGeminiApiSettings, handleCompanionInteraction, handlePrisonerInteraction, summarizeCompanionInteraction, summarizePrisonerInteraction, generateNonCombatDefeatConsequence, generateSlaveAuctionData, runSlaveAuctionTurn, runSlaveAuctioneerCall, generateVictoryConsequence, summarizeCombat, generateDefeatConsequence, generateCraftedItemViaAI, findLocationWithAI, generateNextTurn, generateRefreshedChoices, generateCopilotResponse } from './../services/geminiService';
 import { useSetupActions } from './actions/useSetupActions';
 import { useAuctionActions } from './actions/useAuctionActions';
 import { useMainGameLoop } from './actions/useMainGameLoop';
@@ -58,6 +58,9 @@ interface UseGameActionsProps {
   setSentVictoryConsequencePromptsLog: React.Dispatch<React.SetStateAction<string[]>>;
   setReceivedVictoryConsequenceResponsesLog: React.Dispatch<React.SetStateAction<string[]>>;
   sentPromptsLog: string[]; // Pass sentPromptsLog for manual token check
+  // New props for Copilot
+  aiCopilotMessages: GameMessage[];
+  setAiCopilotMessages: React.Dispatch<React.SetStateAction<GameMessage[]>>;
 }
 
 export const useGameActions = (props: UseGameActionsProps) => {
@@ -777,6 +780,69 @@ const handleCombatEnd = useCallback(async (result: CombatEndPayload) => {
         setGameMessages
     ]);
 
+    const handleCopilotQuery = useCallback(async (userQuestion: string, context?: string) => {
+        setIsLoadingApi(true);
+        resetApiError();
+    
+        const userMessageContent = context ? `${userQuestion}\n\n**Bối cảnh:**\n${context}` : userQuestion;
+        const userMessage: GameMessage = {
+            id: `copilot-user-${Date.now()}`,
+            type: 'player_action',
+            content: userMessageContent,
+            timestamp: Date.now(),
+            turnNumber: knowledgeBase.playerStats.turn,
+            isPlayerInput: true,
+        };
+    
+        const newCopilotMessages = [...(props.aiCopilotMessages || []), userMessage];
+        props.setAiCopilotMessages(newCopilotMessages);
+    
+        try {
+            const { turnHistory, ragVectorStore, aiCopilotMessages, ...kbSnapshot } = knowledgeBase;
+            
+            const last50Messages = gameMessages.slice(-50).map(msg => {
+                if (msg.type === 'player_action') return `${knowledgeBase.worldConfig?.playerName || 'Người chơi'}: ${msg.content}`;
+                if (msg.type === 'narration') return `AI: ${msg.content}`;
+                return `[${msg.type.toUpperCase()}]: ${msg.content}`;
+            }).join('\n');
+            
+            const copilotChatHistory = newCopilotMessages.slice(0, -1).map(msg => {
+                return msg.isPlayerInput ? `Người chơi: ${msg.content}` : `Trợ lý: ${msg.content}`;
+            }).join('\n');
+    
+            const { response: copilotResponse } = await generateCopilotResponse(
+                kbSnapshot,
+                last50Messages,
+                copilotChatHistory,
+                userMessageContent
+            );
+    
+            const aiMessage: GameMessage = {
+                id: `copilot-ai-${Date.now()}`,
+                type: 'narration',
+                content: copilotResponse.narration,
+                timestamp: Date.now(),
+                turnNumber: knowledgeBase.playerStats.turn,
+            };
+    
+            props.setAiCopilotMessages(prev => [...prev, aiMessage]);
+    
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : "Lỗi khi liên hệ Siêu Trợ Lý AI.";
+            setApiErrorWithTimeout(errorMsg);
+            const errorMessage: GameMessage = {
+                id: `copilot-error-${Date.now()}`,
+                type: 'error',
+                content: `Lỗi: ${errorMsg}`,
+                timestamp: Date.now(),
+                turnNumber: knowledgeBase.playerStats.turn,
+            };
+            props.setAiCopilotMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsLoadingApi(false);
+        }
+    }, [knowledgeBase, gameMessages, props.aiCopilotMessages, props.setAiCopilotMessages, setIsLoadingApi, resetApiError, setApiErrorWithTimeout]);
+
   return {
     isSummarizingNextPageTransition: mainGameLoopActions.isSummarizingNextPageTransition,
     handleSetupComplete,
@@ -799,5 +865,6 @@ const handleCombatEnd = useCallback(async (result: CombatEndPayload) => {
     handleSkipSlaveAuctionItem,
     resetApiError: props.resetApiError,
     handleCheckTokenCount,
+    handleCopilotQuery,
   };
 };

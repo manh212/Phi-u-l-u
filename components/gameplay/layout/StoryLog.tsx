@@ -1,6 +1,4 @@
 
-
-
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { GameMessage, KnowledgeBase, StyleSettings } from '../../../types';
 import Button from '../../ui/Button';
@@ -27,6 +25,7 @@ interface StoryLogProps {
   parseAndHighlightText: (text: string) => React.ReactNode[];
   getDynamicMessageStyles: (msgType: GameMessage['type']) => React.CSSProperties;
   onClick: () => void;
+  onAskCopilotAboutError: (errorMsg: string) => void;
 }
 
 const StoryLog: React.FC<StoryLogProps> = ({
@@ -46,6 +45,7 @@ const StoryLog: React.FC<StoryLogProps> = ({
   parseAndHighlightText,
   getDynamicMessageStyles,
   onClick,
+  onAskCopilotAboutError,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [editingText, setEditingText] = useState('');
@@ -230,7 +230,23 @@ const StoryLog: React.FC<StoryLogProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <p className="leading-relaxed">{React.Children.toArray(parseAndHighlightText(String(msg.content)))}</p>
+                  <div className="flex flex-col items-start">
+                    <p className="leading-relaxed">{React.Children.toArray(parseAndHighlightText(String(msg.content)))}</p>
+                     {msg.type === 'error' && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="!py-1 !px-2 text-xs border-cyan-400 text-cyan-300 hover:bg-cyan-700 mt-2 self-start"
+                            onClick={() => onAskCopilotAboutError(msg.content)}
+                            title="Hỏi Siêu Trợ Lý AI về lỗi này"
+                        >
+                            <span className="flex items-center gap-1">
+                                <span role="img" aria-label="brain">🧠</span>
+                                <span>Hỏi AI về lỗi này</span>
+                            </span>
+                        </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

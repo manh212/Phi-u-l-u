@@ -21,6 +21,7 @@ export interface GameContextType {
     currentScreen: GameScreen;
     knowledgeBase: KnowledgeBase;
     gameMessages: GameMessage[];
+    aiCopilotMessages: GameMessage[];
     styleSettings: StyleSettings;
     storageSettings: StorageSettings;
     isInitialLoading: boolean;
@@ -129,6 +130,7 @@ export interface GameContextType {
     setRetrievedRagContextLog: React.Dispatch<React.SetStateAction<string[]>>;
     updateLocationCoordinates: (locationId: string, x: number, y: number) => void;
     handleCheckTokenCount: () => Promise<void>; // NEW
+    handleCopilotQuery: (userQuestion: string, context?: string) => Promise<void>; // NEW
 
     // Modal Actions
     openEntityModal: (type: GameEntityType, entity: GameEntity) => void;
@@ -169,6 +171,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         prisonerInteractionLog, setPrisonerInteractionLog,
         companionInteractionLog, setCompanionInteractionLog,
         retrievedRagContextLog, setRetrievedRagContextLog,
+        aiCopilotMessages, setAiCopilotMessages, // Get copilot state from hook
         // Destructure new log state and setters
         sentCombatSummaryPromptsLog, setSentCombatSummaryPromptsLog,
         receivedCombatSummaryResponsesLog, setReceivedCombatSummaryResponsesLog,
@@ -183,7 +186,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // Local state within the context
     const [currentScreen, setCurrentScreen] = useState<GameScreen>(GameScreen.Initial);
-    const [sentCraftingPromptsLog, setSentCraftingPromptsLog] = useState<string[]>([]);
     const [sentNpcAvatarPromptsLog, setSentNpcAvatarPromptsLog] = useState<string[]>([]);
     const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
     const [isSavingGame, setIsSavingGame] = useState<boolean>(false);
@@ -346,6 +348,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         ...gameData,
         gameMessages, // Pass gameMessages directly
         setGameMessages, // Pass the setter
+        aiCopilotMessages, // Pass copilot state
+        setAiCopilotMessages, // Pass copilot setter
         onQuit: onQuit,
         showNotification,
         setCurrentScreen,
@@ -706,7 +710,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 currentPageMessagesLog,
                 previousPageSummariesContent,
                 lastNarrationFromPreviousPage,
-                (prompt) => setSentCraftingPromptsLog(prev => [prompt, ...prev].slice(0, 10))
+                (prompt) => gameData.setSentCraftingPromptsLog(prev => [prompt, ...prev].slice(0, 10))
             );
             gameData.setReceivedCraftingResponsesLog(prev => [rawText, ...prev].slice(0, 10));
 
@@ -761,7 +765,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setIsCraftingItem(false);
             setIsLoadingApi(false);
         }
-    }, [knowledgeBase, addMessageAndUpdateState, showNotification, gameData, setSentCraftingPromptsLog, setKnowledgeBase, setSentNpcAvatarPromptsLog, currentPageMessagesLog, previousPageSummariesContent, lastNarrationFromPreviousPage]);
+    }, [knowledgeBase, addMessageAndUpdateState, showNotification, gameData, setKnowledgeBase, setSentNpcAvatarPromptsLog, currentPageMessagesLog, previousPageSummariesContent, lastNarrationFromPreviousPage]);
     
     const handleBuyItem = useCallback((itemId: string, vendorId: string, quantity: number = 1) => {
         setKnowledgeBase(prevKb => {
@@ -1003,6 +1007,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         currentScreen,
         knowledgeBase,
         gameMessages,
+        aiCopilotMessages: gameData.aiCopilotMessages,
         styleSettings,
         storageSettings,
         isInitialLoading,
@@ -1119,6 +1124,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         renameSlave,
         updateLocationCoordinates,
         handleCheckTokenCount: gameActions.handleCheckTokenCount,
+        handleCopilotQuery: gameActions.handleCopilotQuery,
     };
 
     return (

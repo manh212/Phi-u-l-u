@@ -2,6 +2,7 @@
 
 
 
+
 import { GoogleGenAI, GenerateContentResponse, HarmCategory, HarmBlockThreshold, CountTokensResponse } from "@google/genai";
 import { KnowledgeBase, ParsedAiResponse, AiChoice, WorldSettings, ApiConfig, SafetySetting, PlayerActionInputType, ResponseLength, StartingSkill, StartingItem, StartingNPC, StartingLore, GameMessage, GeneratedWorldElements, StartingLocation, StartingFaction, PlayerStats, Item as ItemType, GenreType, ViolenceLevel, StoryTone, NsfwDescriptionStyle, TuChatTier, TU_CHAT_TIERS, AuctionItem, GameLocation, AuctionState, WorldDate, CongPhapGrade, CongPhapType, LinhKiActivationType, LinhKiCategory, ProfessionGrade, ProfessionType, FindLocationParams, NPC, Skill, Prisoner, Wife, Slave, CombatEndPayload, RaceCultivationSystem, StartingYeuThu, AuctionSlave } from '../types'; 
 import { PROMPT_FUNCTIONS } from '../prompts';
@@ -1024,5 +1025,18 @@ export async function generateRefreshedChoices(
         knowledgeBase
     );
     incrementApiCallCount('STORY_GENERATION');
+    return generateContentWithRateLimit(prompt, model, onPromptConstructed);
+}
+
+export async function generateCopilotResponse(
+    knowledgeBaseSnapshot: Omit<KnowledgeBase, 'turnHistory' | 'ragVectorStore'>,
+    last50Messages: string,
+    copilotChatHistory: string,
+    userQuestionAndTask: string,
+    onPromptConstructed?: (prompt: string) => void
+): Promise<{response: ParsedAiResponse, rawText: string, constructedPrompt: string}> {
+    const { model } = getApiSettings();
+    const prompt = PROMPT_FUNCTIONS.copilot(knowledgeBaseSnapshot, last50Messages, copilotChatHistory, userQuestionAndTask);
+    incrementApiCallCount('AI_COPILOT');
     return generateContentWithRateLimit(prompt, model, onPromptConstructed);
 }

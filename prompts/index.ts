@@ -29,6 +29,7 @@ import { runSlaveAuctioneerCallPrompt } from './runSlaveAuctioneerCallPrompt';
 import { generateCompletionPrompt } from './completeWorldDetailsPrompt'; // NEW IMPORT
 import { generateAnalyzeStylePrompt } from './analyzeStylePrompt';
 import { generateRefreshChoicesPrompt } from './refreshChoicesPrompt';
+import { generateAICopilotPrompt } from './copilotPrompt'; // NEW IMPORT
 
 
 export const PROMPT_FUNCTIONS = {
@@ -63,6 +64,7 @@ export const PROMPT_FUNCTIONS = {
   completeWorldDetails: generateCompletionPrompt, // NEW
   analyzeStyle: generateAnalyzeStylePrompt, // NEW
   refreshChoices: generateRefreshChoicesPrompt, // NEW
+  copilot: generateAICopilotPrompt, // NEW
 };
 
 // It's good practice to also export the type if other modules might need to know the shape of PROMPT_FUNCTIONS
