@@ -3,7 +3,7 @@ import { KnowledgeBase, GameMessage } from '../types';
 
 export const generateAICopilotPrompt = (
     knowledgeBaseSnapshot: Omit<KnowledgeBase, 'turnHistory' | 'ragVectorStore'>,
-    last50Messages: string,
+    lastMessagesLog: string,
     copilotChatHistory: string,
     userQuestionAndTask: string
 ): string => {
@@ -18,7 +18,7 @@ ${JSON.stringify(knowledgeBaseSnapshot, null, 2)}
 
 ---
 **LỊCH SỬ SỰ KIỆN GẦN ĐÂY (RECENT EVENTS):**
-${last50Messages || "Chưa có sự kiện nào."}
+${lastMessagesLog || "Chưa có sự kiện nào."}
 
 ---
 **LỊCH SỬ TRÒ CHUYỆN VỚI TRỢ LÝ (ASSISTANT CHAT HISTORY):**

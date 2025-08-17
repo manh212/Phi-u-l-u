@@ -800,7 +800,7 @@ const handleCombatEnd = useCallback(async (result: CombatEndPayload) => {
         try {
             const { turnHistory, ragVectorStore, aiCopilotMessages, ...kbSnapshot } = knowledgeBase;
             
-            const last50Messages = gameMessages.slice(-50).map(msg => {
+            const last20Messages = gameMessages.slice(-20).map(msg => {
                 if (msg.type === 'player_action') return `${knowledgeBase.worldConfig?.playerName || 'Người chơi'}: ${msg.content}`;
                 if (msg.type === 'narration') return `AI: ${msg.content}`;
                 return `[${msg.type.toUpperCase()}]: ${msg.content}`;
@@ -812,7 +812,7 @@ const handleCombatEnd = useCallback(async (result: CombatEndPayload) => {
     
             const { response: copilotResponse } = await generateCopilotResponse(
                 kbSnapshot,
-                last50Messages,
+                last20Messages,
                 copilotChatHistory,
                 userMessageContent
             );
